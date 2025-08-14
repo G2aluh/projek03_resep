@@ -105,16 +105,13 @@ class Login extends StatelessWidget {
                       width: 296,
                       height: 50,
                       borderRadius: 30,
-                      
                     ),
-
                     _AuthButton(
                       text: 'Login',
                       color: Colors.white,
                       textColor: const Color(0xFF02480F),
                       borderColor: const Color(0xFF02480F),
                       onTap: () => _showAuthModal(context, isLogin: true),
-          
                     ),
                   ],
                 ),
@@ -162,9 +159,7 @@ class Login extends StatelessWidget {
                 ),
                 child: Form(
                   key: formKey,
-                  autovalidateMode: isLogin
-                      ? AutovalidateMode.onUserInteraction
-                      : AutovalidateMode.disabled,
+                  autovalidateMode: AutovalidateMode.disabled,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -247,8 +242,7 @@ class Login extends StatelessWidget {
                               color: Colors.black,
                             ),
                             onPressed: () => setState(
-                              () => obscureConfirmPassword =
-                                  !obscureConfirmPassword,
+                              () => obscureConfirmPassword = !obscureConfirmPassword,
                             ),
                           ),
                           validator: (value) => value == null || value.isEmpty
@@ -287,18 +281,118 @@ class Login extends StatelessWidget {
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            const HomeScreen(),
+                                        builder: (context) => const HomeScreen(),
                                       ),
                                     );
                                   } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: ${e.toString()}'),
-                                      ),
-                                    );
                                     setState(() => isLoading = false);
+                                    if (isLogin &&
+                                        (e.toString().contains('invalid credentials') ||
+                                            e.toString().contains('Invalid login credentials'))) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text(
+                                            'Login Gagal',
+                                            style: GoogleFonts.ubuntu(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF02480F),
+                                            ),
+                                          ),
+                                          content: Text(
+                                            'Akun tidak ada atau kata sandi salah.',
+                                            style: GoogleFonts.ubuntu(
+                                              fontSize: 16,
+                                              color: const Color(0xFF02480F),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text(
+                                                'OK',
+                                                style: GoogleFonts.ubuntu(
+                                                  fontSize: 16,
+                                                  color: const Color(0xFF02480F),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else if (!isLogin &&
+                                        (e.toString().contains('email already exists') ||
+                                            e.toString().contains('Email already registered'))) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text(
+                                            'Registrasi Gagal',
+                                            style: GoogleFonts.ubuntu(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF02480F),
+                                            ),
+                                          ),
+                                          content: Text(
+                                            'Akun sudah tersedia. Gunakan email lain atau login.',
+                                            style: GoogleFonts.ubuntu(
+                                              fontSize: 16,
+                                              color: const Color(0xFF02480F),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text(
+                                                'OK',
+                                                style: GoogleFonts.ubuntu(
+                                                  fontSize: 16,
+                                                  color: const Color(0xFF02480F),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text(
+                                            isLogin ? 'Login Gagal' : 'Registrasi Gagal',
+                                            style: GoogleFonts.ubuntu(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF02480F),
+                                            ),
+                                          ),
+                                          content: Text(
+                                            'Akun sudah tersedia silahkan gunakan email lain atau login.',
+                                            style: GoogleFonts.ubuntu(
+                                              fontSize: 16,
+                                              color: const Color(0xFF02480F),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text(
+                                                'OK',
+                                                style: GoogleFonts.ubuntu(
+                                                  fontSize: 16,
+                                                  color: const Color(0xFF02480F),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
                                   }
+                                } else {
+                                  setState(() {});
                                 }
                               },
                       ),
@@ -310,7 +404,7 @@ class Login extends StatelessWidget {
                             isLogin
                                 ? 'Don’t have an account? '
                                 : 'Already have account? ',
-                            style:  GoogleFonts.ubuntu(
+                            style: GoogleFonts.ubuntu(
                               fontSize: 16,
                               color: Color(0xFF02480F),
                             ),
@@ -407,16 +501,23 @@ class _AuthButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 296,
-        height: 50,
+        width: width,
+        height: height,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: color,
           border: borderColor != null
               ? Border.all(color: borderColor!, width: 3)
               : null,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [BoxShadow(offset: Offset(0, 4), blurRadius: 5, spreadRadius: 0,color: Color(0xFF00000040))]
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: [
+            BoxShadow(
+              offset: Offset(0, 4),
+              blurRadius: 5,
+              spreadRadius: 0,
+              color: Color(0xFF00000040),
+            ),
+          ],
         ),
         child: isLoading
             ? const CircularProgressIndicator(color: Color(0xFF02480F))
