@@ -8,6 +8,7 @@ import 'package:resep/ui/screens/bottom_sheet.dart';
 import 'package:resep/ui/models/opsi_menu.dart';
 import 'package:resep/ui/screens/setting.dart';
 import 'package:resep/ui/screens/login.dart';
+import 'package:resep/services/service_makanan.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,12 +20,36 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   RecipeCategory? selectedCategory = RecipeCategory.all;
   String searchQuery = '';
+  final ServiceMakanan _serviceMakanan = ServiceMakanan();
+
+  List<RecipeModel> allRecipes = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecipes();
+  }
+
+  Future<void> _loadRecipes() async {
+    setState(() => isLoading = true);
+    try {
+      final recipes = await _serviceMakanan.fetchRecipes();
+      setState(() {
+        allRecipes = recipes;
+      });
+    } catch (e) {
+      print("Error load recipes: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }               
+  }
 
   @override
   Widget build(BuildContext context) {
     final List<RecipeModel> displayedRecipes = selectedCategory == RecipeCategory.all
-        ? RecipeModel.recipes
-        : RecipeModel.getByCategory(selectedCategory!);
+        ? allRecipes
+        : allRecipes.where((recipe) => recipe.category == selectedCategory!.name).toList();
 
     final List<RecipeModel> filteredRecipes = displayedRecipes.where((recipe) {
       return recipe.title.toLowerCase().contains(searchQuery.toLowerCase());
@@ -43,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 35),
+            // Header + tombol tambah
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Container(
@@ -58,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     RichText(
                       text: TextSpan(
@@ -90,14 +115,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               context: context,
                               isScrollControlled: true,
                               shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20),
-                                ),
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                               ),
                               builder: (context) => TambahResepBottomSheet(),
-                            ).then((_) {
-                              setState(() {}); // Refresh UI after adding recipe
-                            });
+                            ).then((_) => _loadRecipes()); // refresh setelah tambah resep
                           },
                           icon: const Icon(Icons.add, size: 30, color: Color(0xFF02480F)),
                         ),
@@ -105,26 +126,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: const Icon(Icons.menu, size: 30, color: Color(0xFF02480F)),
                           onSelected: (value) {
                             switch (value) {
-                              case 'profile':
-                               
-                                break;
-                              case 'bookmark':
-                                // Tambahkan logika untuk bookmark
-                                break;
-                              case 'notification':
-                                // Tambahkan logika untuk notifikasi
-                                break;
                               case 'settings':
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => SettingsScreen()),
-                                );
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen()));
                                 break;
                               case 'exit':
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (context) =>Login()),
-                                );
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Login()));
                                 break;
                             }
                           },
@@ -156,17 +162,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
-                    },
+                    onChanged: (value) => setState(() => searchQuery = value),
                     decoration: InputDecoration(
                       hintText: 'Cari Resep...',
                       hintStyle: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF6B6767),
+                        color: const Color(0xFF6B6767),
                       ),
                       prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 24),
                       filled: true,
@@ -181,10 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
 
-            // Category List
+            // Category
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -196,24 +197,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       image: 'sate.png',
                     ),
                     selectedCategory: selectedCategory,
-                    onCategorySelected: (category) {
-                      setState(() {
-                        selectedCategory = category;
-                      });
-                    },
+                    onCategorySelected: (category) => setState(() => selectedCategory = category),
                   ),
                   const SizedBox(width: 12),
                   ...MenuCategoryModel.category.map(
-                    (category) => Padding(
+                    ( category) => Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: MenuCategoryButton(
                         category: category,
                         selectedCategory: selectedCategory,
-                        onCategorySelected: (category) {
-                          setState(() {
-                            selectedCategory = category;
-                          });
-                        },
+                        onCategorySelected: (category) => setState(() => selectedCategory = category),
                       ),
                     ),
                   ),
@@ -221,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Recommended Recipe Title
+            // Title rekomendasi
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -234,39 +227,34 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF524D4D),
                       shadows: [
-                        Shadow(
-                          offset: Offset(0, 5),
-                          blurRadius: 5,
-                          color: Color(0xFF00000040),
-                        ),
+                        Shadow(offset: Offset(0, 5), blurRadius: 5, color: Color(0xFF00000040)),
                       ],
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('See All'),
-                  ),
+                  TextButton(onPressed: () {}, child: const Text('See All')),
                 ],
               ),
             ),
 
-            // Recipe Grid
+            // Grid resep
             Expanded(
-              child: filteredRecipes.isEmpty
-                  ? const Center(child: Text('Tidak ada resep ditemukan'))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(8.0),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.75,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: filteredRecipes.length,
-                      itemBuilder: (context, index) {
-                        return FoodCard(recipe: filteredRecipes[index]);
-                      },
-                    ),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : filteredRecipes.isEmpty
+                      ? const Center(child: Text('Tidak ada resep ditemukan'))
+                      : GridView.builder(
+                          padding: const EdgeInsets.all(8.0),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.75,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                          itemCount: filteredRecipes.length,
+                          itemBuilder: (context, index) {
+                            return FoodCard(recipe: filteredRecipes[index]);
+                          },
+                        ),
             ),
           ],
         ),

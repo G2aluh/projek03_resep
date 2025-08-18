@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:resep/ui/assets.dart' as app_asset;
 
 enum RecipeCategory {
   all,
@@ -22,10 +20,26 @@ enum RecipeCategory {
         return 'Cake';
     }
   }
+
+  // Convert string kategori dari DB ke enum
+  static RecipeCategory fromString(String value) {
+    switch (value.toLowerCase()) {
+      case 'appetizer':
+        return RecipeCategory.appetizer;
+      case 'main course':
+        return RecipeCategory.mainCourse;
+      case 'dessert':
+        return RecipeCategory.dessert;
+      case 'cake':
+        return RecipeCategory.cake;
+      default:
+        return RecipeCategory.all;
+    }
+  }
 }
 
 class RecipeModel {
-  final UniqueKey id;
+  final dynamic id; // bisa int atau String dari database
   final String title;
   final String image;
   final List<String> ingredients;
@@ -33,32 +47,56 @@ class RecipeModel {
   final RecipeCategory category;
 
   RecipeModel({
-    UniqueKey? id,
+    required this.id,
     required this.title,
     required this.image,
     this.ingredients = const [],
     this.steps = const [],
     this.category = RecipeCategory.appetizer,
-  }) : id = id ?? UniqueKey();
+  });
 
+  // Factory buat convert dari Supabase
+  factory RecipeModel.fromMap(Map<String, dynamic> data) {
+    return RecipeModel(
+      id: data['id'],
+      title: data['nama'] ?? '',
+      image: data['gambar_url'] ?? '',
+      ingredients: (data['bahan'] ?? '')
+          .toString()
+          .split('\n')
+          .where((e) => e.trim().isNotEmpty)
+          .toList(),
+      steps: (data['langkah'] ?? '')
+          .toString()
+          .split('\n')
+          .where((e) => e.trim().isNotEmpty)
+          .toList(),
+      category: RecipeCategory.fromString(data['kategori'] ?? ''),
+    );
+  }
+
+  // Data dummy
   static List<RecipeModel> recipes = [
     RecipeModel(
+      id: 1,
       title: "Sate Ayam",
-      image: app_asset.sate,
+      image: "assets/images/sate.png",
       ingredients: ["1. ayam", "2. kacang", "3. kecap"],
       steps: ["- bakar", "- tusuk", "- makan", "- minum"],
       category: RecipeCategory.appetizer,
     ),
     RecipeModel(
+      id: 2,
       title: "Sate Kambing",
-      image: app_asset.sate,
+      image: "assets/images/sate.png",
       ingredients: ["1. kambing", "2. kacang", "3. kecap"],
       steps: ["- bakar", "- tusuk", "- makan"],
       category: RecipeCategory.dessert,
     ),
     RecipeModel(
+      id: 3,
       title: "Sate Sapi",
-      image: app_asset.sate,
+      image: "assets/images/sate.png",
       ingredients: ["1. sapi", "2. kacang", "3. kecap"],
       steps: ["- bakar", "- tusuk", "- makan"],
       category: RecipeCategory.cake,
@@ -72,3 +110,4 @@ class RecipeModel {
     return recipes.where((recipe) => recipe.category == category).toList();
   }
 }
+

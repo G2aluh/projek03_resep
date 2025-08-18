@@ -15,12 +15,7 @@ class DetailRecipePage extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Image.asset(
-                  recipe.image,
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                ),
+                _buildRecipeImage(recipe.image),
                 Positioned(
                   top: 30,
                   left: 10,
@@ -55,6 +50,32 @@ class DetailRecipePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 🔹 Widget helper untuk load gambar dari URL atau asset
+  Widget _buildRecipeImage(String path) {
+    final isNetworkImage = path.startsWith('http');
+    return isNetworkImage
+        ? Image.network(
+            path,
+            width: double.infinity,
+            height: 200,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                'assets/images/default_food.png',
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+              );
+            },
+          )
+        : Image.asset(
+            path,
+            width: double.infinity,
+            height: 200,
+            fit: BoxFit.cover,
+          );
   }
 
   Widget buildBahanSection() {

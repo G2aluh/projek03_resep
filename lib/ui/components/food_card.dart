@@ -47,15 +47,28 @@ class _FoodCardState extends State<FoodCard> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                  child: Image.asset(
-                    widget.recipe.image,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 80,
-                  ),
-                ),
+               child: (widget.recipe.image.startsWith('http'))
+    ? Image.network(
+        widget.recipe.image,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 80,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/default_food.png',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 80,
+          );
+        },
+      )
+    : Image.asset(
+        widget.recipe.image,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 80,
+      ),
+
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),

@@ -25,33 +25,17 @@ class ServiceMakanan {
   }
 
   /// Ambil semua makanan dari Supabase
-  Future<List<RecipeModel>> fetchRecipes() async {
-    try {
-      final response = await supabase.from('makanan').select();
-      return (response as List).map((data) {
-        return RecipeModel(
-          id: data['id'], // pakai ID dari database
-          title: data['nama'] ?? '',
-          image: data['gambar_url'] ?? '',
-         ingredients: (data['bahan'] ?? '')
-    .toString()
-    .split('\n')
-    .where((e) => e.trim().isNotEmpty)
-    .toList(),
-
-steps: (data['langkah'] ?? '')
-    .toString()
-    .split('\n')
-    .where((e) => e.trim().isNotEmpty)
-    .toList(),
-
-          category: data['kategori'] ?? '',
-        );
-      }).toList();
-    } catch (e) {
-      throw Exception('Gagal mengambil data makanan: $e');
-    }
+ Future<List<RecipeModel>> fetchRecipes() async {
+  try {
+    final response = await supabase.from('makanan').select();
+    return (response as List)
+        .map((data) => RecipeModel.fromMap(data))
+        .toList();
+  } catch (e) {
+    throw Exception('Gagal mengambil data makanan: $e');
   }
+}
+
 
   /// Ambil daftar kategori unik
   Future<List<String>> fetchCategories() async {
