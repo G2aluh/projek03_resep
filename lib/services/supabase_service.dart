@@ -24,7 +24,7 @@ class SupabaseService {
       }
 
       // Insert data tambahan ke tabel profiles
-      await _client.from('profiles').insert({
+      await _client.from('profile').insert({
         'id': user.id,
         'name': name.trim(),
         'bio': bio.trim(),
