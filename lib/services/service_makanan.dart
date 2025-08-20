@@ -25,17 +25,16 @@ class ServiceMakanan {
   }
 
   /// Ambil semua makanan dari Supabase
- Future<List<RecipeModel>> fetchRecipes() async {
-  try {
-    final response = await supabase.from('makanan').select();
-    return (response as List)
-        .map((data) => RecipeModel.fromMap(data))
-        .toList();
-  } catch (e) {
-    throw Exception('Gagal mengambil data makanan: $e');
+  Future<List<RecipeModel>> fetchRecipes(String userId) async {
+    try {
+      final response = await supabase.from('makanan').select();
+      return (response as List)
+          .map((data) => RecipeModel.fromMap(data))
+          .toList();
+    } catch (e) {
+      throw Exception('Gagal mengambil data makanan: $e');
+    }
   }
-}
-
 
   /// Ambil daftar kategori unik
   Future<List<String>> fetchCategories() async {
@@ -55,5 +54,36 @@ class ServiceMakanan {
     } catch (e) {
       throw Exception('Gagal mengambil kategori: $e');
     }
+  }
+
+  /// Ambil daftar recipe_id yang dibookmark oleh user
+  Future<List<String>> fetchBookmarks(String userId) async {
+    final response = await supabase
+        .from('bookmarks')
+        .select('recipe_id')
+        .eq('user_id', userId);
+
+    if (response.isEmpty) {
+      return [];
+    }
+
+    return response.map((item) => item['recipe_id'].toString()).toList();
+  }
+
+  /// Tambah bookmark
+  Future<void> addBookmark(String userId, String recipeId) async {
+    await supabase.from('bookmarks').insert({
+      'user_id': userId,
+      'recipe_id': recipeId,
+    });
+  }
+
+  /// Hapus bookmark
+  Future<void> removeBookmark(String userId, String recipeId) async {
+    await supabase
+        .from('bookmarks')
+        .delete()
+        .eq('user_id', userId)
+        .eq('recipe_id', recipeId);
   }
 }

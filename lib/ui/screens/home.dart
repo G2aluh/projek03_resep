@@ -4,10 +4,12 @@ import 'package:resep/ui/components/food_card.dart';
 import 'package:resep/ui/components/menu_category_button.dart';
 import 'package:resep/ui/models/menu_category.dart';
 import 'package:resep/ui/models/recipe_model.dart';
+import 'package:resep/ui/screens/bookmark.dart';
 import 'package:resep/ui/screens/bottom_sheet.dart';
 import 'package:resep/ui/models/opsi_menu.dart';
 import 'package:resep/ui/screens/setting.dart';
 import 'package:resep/ui/screens/login.dart';
+
 import 'package:resep/services/service_makanan.dart'; // Import service untuk fetch dari Supabase
 
 // Placeholder untuk ProfileScreen (hapus jika sudah ada)
@@ -47,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadRecipes() async {
     setState(() => isLoading = true);
     try {
-      final recipes = await _serviceMakanan.fetchRecipes(); // Fetch dari Supabase
+      final recipes = await _serviceMakanan.fetchRecipes(selectedCategory?.name ?? 'all'); // Fetch dari Supabase
       setState(() {
         allRecipes = recipes;
       });
@@ -273,12 +275,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 );
                                 break;
-                              case 'bookmark':
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Bookmark belum diimplementasikan',
-                                    ),
+                             case 'bookmark':
+                                Navigator.push(
+                                  context,  
+                                  MaterialPageRoute(
+                                    builder: (context) => const BookmarkScreen(),
                                   ),
                                 );
                                 break;
