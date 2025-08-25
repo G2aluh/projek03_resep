@@ -91,7 +91,7 @@ class Login extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     Image.asset(
-                      'logo.png',
+                      'assets/logo.png',
                       width: 295,
                       height: 283,
                       fit: BoxFit.contain,

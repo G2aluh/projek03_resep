@@ -4,11 +4,12 @@ import 'package:resep/ui/models/recipe_model.dart';
 class ServiceMakanan {
   final supabase = Supabase.instance.client;
 
+  /// Tambah makanan baru
   Future<void> tambahMakanan({
     required String kategori,
     required String nama,
-    required String bahan,
-    required String langkah,
+    required List<String> bahan,
+    required List<String> langkah,
     String? gambarUrl,
   }) async {
     final userId = supabase.auth.currentUser?.id;
@@ -24,7 +25,7 @@ class ServiceMakanan {
     });
   }
 
-  /// Ambil semua makanan dari Supabase
+  /// Ambil semua resep (untuk Home)
   Future<List<RecipeModel>> fetchRecipes(String userId) async {
     try {
       final response = await supabase.from('makanan').select();
@@ -33,6 +34,20 @@ class ServiceMakanan {
           .toList();
     } catch (e) {
       throw Exception('Gagal mengambil data makanan: $e');
+    }
+  }
+
+  /// Ambil resep milik user tertentu (untuk Profile)
+  Future<List<RecipeModel>> fetchRecipesByUser(String userId) async {
+    try {
+      final response =
+          await supabase.from('makanan').select().eq('user_id', userId);
+
+      return (response as List)
+          .map((data) => RecipeModel.fromMap(data))
+          .toList();
+    } catch (e) {
+      throw Exception('Gagal mengambil data makanan user: $e');
     }
   }
 
@@ -56,16 +71,14 @@ class ServiceMakanan {
     }
   }
 
-  /// Ambil daftar recipe_id yang dibookmark oleh user
+  /// Ambil daftar bookmark milik user
   Future<List<String>> fetchBookmarks(String userId) async {
     final response = await supabase
         .from('bookmarks')
         .select('recipe_id')
         .eq('user_id', userId);
 
-    if (response.isEmpty) {
-      return [];
-    }
+    if (response.isEmpty) return [];
 
     return response.map((item) => item['recipe_id'].toString()).toList();
   }

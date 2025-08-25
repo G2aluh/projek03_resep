@@ -1,3 +1,4 @@
+import 'dart:convert'; // Untuk jsonDecode
 
 enum RecipeCategory {
   all,
@@ -57,20 +58,62 @@ class RecipeModel {
 
   // Factory buat convert dari Supabase
   factory RecipeModel.fromMap(Map<String, dynamic> data) {
+    dynamic bahanRaw = data['bahan'] ?? [];
+    dynamic langkahRaw = data['langkah'] ?? [];
+
+    List<String> parsedIngredients = [];
+    List<String> parsedSteps = [];
+
+    // Handle ingredients
+    if (bahanRaw is List) {
+      // Jika sudah List dari Supabase array, cast ke List<String>
+      parsedIngredients = bahanRaw.map((e) => e.toString()).toList();
+    } else if (bahanRaw is String) {
+      // Jika String, coba parse JSON atau split newline
+      try {
+        if (bahanRaw.startsWith('[') && bahanRaw.endsWith(']')) {
+          parsedIngredients = List<String>.from(jsonDecode(bahanRaw));
+        } else {
+          parsedIngredients = bahanRaw
+              .split('\n')
+              .where((e) => e.trim().isNotEmpty)
+              .toList();
+        }
+      } catch (e) {
+        print('Gagal parse ingredients: $e');
+        parsedIngredients = [];
+      }
+    } else {
+      print('Tipe bahan tidak didukung: ${bahanRaw.runtimeType}');
+    }
+
+    // Serupa untuk steps
+    if (langkahRaw is List) {
+      parsedSteps = langkahRaw.map((e) => e.toString()).toList();
+    } else if (langkahRaw is String) {
+      try {
+        if (langkahRaw.startsWith('[') && langkahRaw.endsWith(']')) {
+          parsedSteps = List<String>.from(jsonDecode(langkahRaw));
+        } else {
+          parsedSteps = langkahRaw
+              .split('\n')
+              .where((e) => e.trim().isNotEmpty)
+              .toList();
+        }
+      } catch (e) {
+        print('Gagal parse steps: $e');
+        parsedSteps = [];
+      }
+    } else {
+      print('Tipe langkah tidak didukung: ${langkahRaw.runtimeType}');
+    }
+
     return RecipeModel(
       id: data['id'],
       title: data['nama'] ?? '',
       image: data['gambar_url'] ?? '',
-      ingredients: (data['bahan'] ?? '')
-          .toString()
-          .split('\n')
-          .where((e) => e.trim().isNotEmpty)
-          .toList(),
-      steps: (data['langkah'] ?? '')
-          .toString()
-          .split('\n')
-          .where((e) => e.trim().isNotEmpty)
-          .toList(),
+      ingredients: parsedIngredients,
+      steps: parsedSteps,
       category: RecipeCategory.fromString(data['kategori'] ?? ''),
     );
   }
@@ -81,24 +124,24 @@ class RecipeModel {
       id: 1,
       title: "Sate Ayam",
       image: "assets/images/sate.png",
-      ingredients: ["1. ayam", "2. kacang", "3. kecap"],
-      steps: ["- bakar", "- tusuk", "- makan", "- minum"],
+      ingredients: ["ayam", "kacang", "kecap"], // Dihapus nomor manual untuk konsistensi
+      steps: ["bakar", "tusuk", "makan", "minum"], // Dihapus tanda '-' untuk konsistensi
       category: RecipeCategory.appetizer,
     ),
     RecipeModel(
       id: 2,
       title: "Sate Kambing",
       image: "assets/images/sate.png",
-      ingredients: ["1. kambing", "2. kacang", "3. kecap"],
-      steps: ["- bakar", "- tusuk", "- makan"],
+      ingredients: ["kambing", "kacang", "kecap"],
+      steps: ["bakar", "tusuk", "makan"],
       category: RecipeCategory.dessert,
     ),
     RecipeModel(
       id: 3,
       title: "Sate Sapi",
       image: "assets/images/sate.png",
-      ingredients: ["1. sapi", "2. kacang", "3. kecap"],
-      steps: ["- bakar", "- tusuk", "- makan"],
+      ingredients: ["sapi", "kacang", "kecap"],
+      steps: ["bakar", "tusuk", "makan"],
       category: RecipeCategory.cake,
     ),
   ];
@@ -110,4 +153,3 @@ class RecipeModel {
     return recipes.where((recipe) => recipe.category == category).toList();
   }
 }
-

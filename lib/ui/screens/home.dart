@@ -9,21 +9,10 @@ import 'package:resep/ui/screens/bottom_sheet.dart';
 import 'package:resep/ui/models/opsi_menu.dart';
 import 'package:resep/ui/screens/setting.dart';
 import 'package:resep/ui/screens/login.dart';
+import 'package:resep/ui/screens/profile_screen.dart';
 
 import 'package:resep/services/service_makanan.dart'; // Import service untuk fetch dari Supabase
 
-// Placeholder untuk ProfileScreen (hapus jika sudah ada)
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: const Center(child: Text('Profile Screen')),
-    );
-  }
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -271,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const ProfileScreen(),
+                                    builder: (context) => const ProfileScreen(),
                                   ),
                                 );
                                 break;
@@ -283,15 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 );
                                 break;
-                              case 'notification':
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Notification belum diimplementasikan',
-                                    ),
-                                  ),
-                                );
-                                break;
+                             
                               case 'settings':
                                 Navigator.push(
                                   context,
@@ -392,13 +373,13 @@ class _HomeScreenState extends State<HomeScreen> {
             // Category List
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
               child: Row(
                 children: [
                   MenuCategoryButton(
                     category: MenuCategoryModel(
                       title: RecipeCategory.all,
-                      image: 'sate.png',
+                      image: 'assets/sate.png',
                     ),
                     selectedCategory: selectedCategory,
                     onCategorySelected: (category) {
@@ -426,33 +407,41 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             // Recommended Recipe Title
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recommended Recipe',
-                    style: GoogleFonts.ubuntu(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF524D4D),
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 5),
-                          blurRadius: 5,
-                          color: Color(0xFF00000040),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('See All'),
-                  ),
-                ],
-              ),
+            
+          Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        'Recommended Recipe',
+        style: GoogleFonts.ubuntu(
+          fontSize: 24,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xFF524D4D),
+          shadows: [
+            Shadow(
+              offset: Offset(0, 5),
+              blurRadius: 5,
+              color: Color(0xFF00000040),
             ),
+          ],
+        ),
+      ),
+      // ✅ tampilkan tombol hanya jika bukan ALL
+      if (selectedCategory != RecipeCategory.all)
+        TextButton(
+          onPressed: () {
+            setState(() {
+              selectedCategory = RecipeCategory.all;
+            });
+          },
+          child: const Text('See All'),
+        ),
+    ],
+  ),
+),
+
             // Recipe Grid
             Expanded(
               child: isLoading

@@ -87,8 +87,8 @@ class _TambahResepBottomSheetState extends State<TambahResepBottomSheet> {
       await serviceMakanan.tambahMakanan(
         kategori: selectedKategori!,
         nama: namaController.text,
-        bahan: bahanController.text,
-        langkah: langkahController.text,
+        bahan: bahanController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+        langkah: langkahController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         gambarUrl: imageUrl ?? '',
       );
 
@@ -257,11 +257,11 @@ class _TambahResepBottomSheetState extends State<TambahResepBottomSheet> {
           ),
 
           const SizedBox(height: 16),
-          _buildTextField(namaController, "Nama Resep"),
+          _buildTextField(namaController, "Nama Resep", maxLines: 1, hintText: "Masukkan nama resep"),
           const SizedBox(height: 16),
-          _buildTextField(bahanController, "Bahan-bahan"),
+          _buildTextField(bahanController, "Bahan-bahan", maxLines: null, minLines: 3, hintText: "Masukkan bahan, satu per baris (tekan enter untuk baris baru)"),
           const SizedBox(height: 16),
-          _buildTextField(langkahController, "Langkah-langkah"),
+          _buildTextField(langkahController, "Langkah-langkah", maxLines: null, minLines: 5, hintText: "Masukkan langkah, satu per baris (tekan enter untuk baris baru)"),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -300,7 +300,7 @@ class _TambahResepBottomSheetState extends State<TambahResepBottomSheet> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label) {
+  Widget _buildTextField(TextEditingController controller, String label, {int? maxLines, int? minLines, String? hintText}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -320,20 +320,22 @@ class _TambahResepBottomSheetState extends State<TambahResepBottomSheet> {
           ),
         ),
         SizedBox(
-            width: 365,
-            height: 51,
-        child: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: "Berikan Jawaban",
-            hintStyle: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF48742C),
+          width: 365,
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: hintText ?? "Berikan Jawaban",
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF48742C),
+              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+            maxLines: maxLines,
+            minLines: minLines,
+            keyboardType: TextInputType.multiline,
           ),
-        ),
         ),
       ],
     );
